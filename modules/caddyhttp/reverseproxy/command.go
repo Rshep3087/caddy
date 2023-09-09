@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/spf13/cobra"
 	"go.uber.org/zap"
@@ -254,6 +255,11 @@ func cmdReverseProxy(fs caddycmd.Flags) (int, error) {
 	server := &caddyhttp.Server{
 		Routes: caddyhttp.RouteList{route},
 		Listen: []string{":" + fromAddr.Port},
+		LengthReaderPool: sync.Pool{
+			New: func() any {
+				return new(caddyhttp.LengthReader)
+			},
+		},
 	}
 	if accessLog {
 		server.Logs = &caddyhttp.ServerLogConfig{}
